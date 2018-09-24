@@ -1,5 +1,5 @@
 ---
-title: Lighthouse audit
+title: Linking and prefetching with Gatsby
 ---
 
 This is a stub. Help our community expand it.
