@@ -3,8 +3,17 @@ title: Deploying and Hosting
 overview: true
 ---
 
-Getting your shiny new Gatsby site onto the cloud is probably the first thing you will want to do now that it's built! Also, give yourself a pat on the back real quick for creating something new!
+Getting your shiny new Gatsby site deployed and accessible is probably the first thing you will want to do now that it's built! Also, give yourself a pat on the back real quick for creating something so great!
 
-In this section you'll find answers to questions about dealing with app routes that aren't at the root of your domain with `path prefixes`, as well as how to deploy to countless hosting solutions such as [Netlify](https://www.netlify.com/), [Cloudfront](https://aws.amazon.com/cloudfront/), and [GitHub Pages](https://pages.github.com/). As well as what's necessary to make sure you're fully prepared for a deploy! 🚀
+When you build your Gatsby application, the output is static content: HTML, CSS, JavaScript, images, etc. This content is incredibly easy and affordable to host with any provider. We have several guides below for hosting with particular providers, but this list is by no means exhaustive. Whether you're deploying to AWS, Netlify, or something else entirely switching to static content makes deploying a trivial concern.
 
-[[guidelist]]
+<CloudCallout>
+  Many of the integrations below, like Netlify and Vercel, are supported on
+  Gatsby Cloud, the best way to deploy Gatsby sites. Reports give you visibility
+  into the performance and SEO of your site, and Gatsby Cloud has a
+  special-built architecture that builds your site 20 times faster, often under
+  10 seconds.
+</CloudCallout>
+<GuideList slug={props.slug} />
+
+The Gatsby blog also has posts on both [deployment](/blog/tags/deployment/) and [hosting](/blog/tags/hosting/).

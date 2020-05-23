@@ -1,30 +1,46 @@
 # gatsby-plugin-typescript
 
-Provides drop-in support for TypeScript and TSX.
+Allows Gatsby to build TypeScript and TSX files. Does NOT run type checking during build (see Caveats).
 
-## Install
+This plugin is automatically included in Gatsby. The only reason you would need to explicitly use this plugin is if you need to configure its options.
 
-`npm install gatsby-plugin-typescript`
+## How to customize usage
 
-## How to use
-
-1.  Include the plugin in your `gatsby-config.js` file.
+1.  Include the plugin in your `gatsby-config.js` file with the specific options
 1.  Write your components in TSX or TypeScript.
+1.  Run TypeScript directly or with a build tool.
 1.  You're good to go.
 
-`gatsby-config.js`
+> When [creating pages programmatically](/docs/programmatically-create-pages-from-data/#creating-pages), you can pass the `.tsx` filename directly as the `component` for [`createPage`](/docs/actions/#createPage).
+
+_**Please note**: If packages don't ship with TypeScript definitions you'll need to manually install those type definitions, e.g. for React. A typical Gatsby project would need: `npm install --save-dev @types/react @types/react-dom @types/node`_
+
+## Options
+
+When adding this plugin to your `gatsby-config.js`, you can pass in options to override the default [@babel/preset-typescript](https://babeljs.io/docs/en/babel-preset-typescript#options) config.
 
 ```javascript
+// gatsby-config.js
 module.exports = {
-  // ...,
-  plugins: [...`gatsby-plugin-typescript`],
+  plugins: [
+    {
+      resolve: `gatsby-plugin-typescript`,
+      options: {
+        isTSX: true, // defaults to false
+        jsxPragma: `jsx`, // defaults to "React"
+        allExtensions: true, // defaults to false
+      },
+    },
+  ],
 }
 ```
+
+For more detailed documentation on the available options, visit https://babeljs.io/docs/en/babel-preset-typescript#options.
 
 ## Caveats
 
 This plugin uses [`babel-plugin-transform-typescript`](https://babeljs.io/docs/en/babel-plugin-transform-typescript.html)
-to transpile typescript. It does _not do type checking_. Also since the TypeScript
+to transpile TypeScript. It does _not do type checking_. Also since the TypeScript
 compiler is not involved, the following applies:
 
 > Does not support namespaces.
@@ -39,6 +55,10 @@ compiler is not involved, the following applies:
 > cannot be compiled to ES.next. Workaround: Convert
 > to using export default and export const,
 > and import x, {y} from "z".
+>
+> Does not support baseUrl.
+> Workaround: use [gatsby-plugin-root-import](https://www.gatsbyjs.org/packages/gatsby-plugin-root-import/)
+> and configure it to point the baseUrl value (also set baseUrl option in tsconfig.json file).
 
 https://babeljs.io/docs/en/babel-plugin-transform-typescript.html
 

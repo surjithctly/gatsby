@@ -1,8 +1,14 @@
 ---
 title: Learning how to code with Gatsby
-date: "2018-07-07"
+date: 2018-07-07
 author: "Shannon Soper"
-tags: ["college", "case study", "design", "getting-started"]
+tags:
+  [
+    "learning-to-code",
+    "case-studies",
+    "cutting-edge-experiences",
+    "getting-started",
+  ]
 ---
 
 ## Graphic Design Students at the Art Institute
@@ -15,9 +21,9 @@ However, in his current class _nobody has dropped out_. And every single one of 
 
 ## Here are some of the student’s final sites:
 
-[![Image of graphic designer's site](graphic-design-1.png)](http://mmd-site.netlify.com/)
+[![Image of graphic designer's site](graphic-design-1.png)](http://mywetpaintstudio.com/)
 
-[Melany Dierks](http://mmd-site.netlify.com/) ([source](https://github.com/reguv760/mmd-site))
+[Melany Dierks](http://mywetpaintstudio.com/) ([source](https://github.com/reguv760/mmd-site2))
 
 [![Image of graphic designer's site](graphic-design-2.png)](http://myceevee.netlify.com/)
 
@@ -51,11 +57,14 @@ Since I just built a site using GatsbyJS, I decided this was the perfect topic t
 
 Structure of the class:
 
-1.  _Taught them React._ They loved `create-react-app` and how it magically created a server and gave them hot code push powers.
-2.  _Taught them NextJS._ They liked how routing was removed from the equation and they could just drop stuff into the pages directory and they would magically work.
-3.  _Taught them Gatsby._ Learning NextJS wasn’t as smooth as I would have liked but once we jumped to learn GatsbyJS, some interesting things happened. A light when on. They were excited.
+1. _Taught them React._ They loved `create-react-app` and how it magically created a server and gave them hot code push powers.
+2. _Taught them NextJS._ They liked how routing was removed from the equation and they could just drop stuff into the pages directory and they would magically work.
+3. _Taught them Gatsby._ Learning NextJS wasn’t as smooth as I would have liked but once we jumped to learn GatsbyJS, some interesting things happened. A light when on. They were excited.
 
-> “Once we jumped to learn GatsbyJS, some interesting things happened. A light when on. They were excited.”
+<Pullquote>
+  Once we jumped to learn GatsbyJS, some interesting things happened. A light
+  when on. They were excited.
+</Pullquote>
 
 ### What do your students like about Gatsby?
 
@@ -64,12 +73,12 @@ Here’s a list of what they love about Gatsby:
 - _Hot reloading_ gives them instant visual feedback like they get in Illustrator and Photoshop
 - _Coding in React_ is fun. By fun, they mean it's easy to add modules, don’t have to build everything from scratch, and they already knew enough about creating React components from Phil’s teaching to jump into Gatsby
 
-* _Docs:_ While not perfect, the Gatsby tutorial and documentation. was “approachable”
-* _Speed_: They never heard of static site generators or the JAMstack, but the speed immediately impressed them
-* _Built off previous knowledge:_ They were able to use the routing knowledge they gleaned from NextJS
-* _Uses simple commands:_ They work locally and type `$ gatsby develop`. A server opens up and they see and can edit their site in real time. Easy peasy. They want to build for production they use `$ gatsby build && gatsby serve`. Simple!
-* _Netlify:_ When I showed them Netlify and how they could quickly (and freely) push their site to GitHub and hook it up to Netlify so that it would automatically build it and make their site live! They were blown away.
-* _Fast to build:_ They were able to create their final projects in 3 weeks
+- _Docs:_ While not perfect, the Gatsby tutorial and documentation. was “approachable”
+- _Speed_: They never heard of static site generators or the JAMstack, but the speed immediately impressed them
+- _Built off previous knowledge:_ They were able to use the routing knowledge they gleaned from NextJS
+- _Uses simple commands:_ They work locally and type `$ npm run develop`. A server opens up and they see and can edit their site in real time. Easy peasy. They want to build for production they use `$ gatsby build && gatsby serve`. Simple!
+- _Netlify:_ When I showed them Netlify and how they could quickly (and freely) push their site to GitHub and hook it up to Netlify so that it would automatically build it and make their site live! They were blown away.
+- _Fast to build:_ They were able to create their final projects in 3 weeks
 
 ### Anything they didn’t like?
 
@@ -77,7 +86,7 @@ One thing they wanted more of:
 
 - they wanted more sample sites built with Gatsby.
 
-They suggest that a link be added to the home page of Gatsby pointing to it and all sites with git repos should be searchable first.
+They suggest that a link be added to the home page of Gatsby pointing to it and all sites with Git repos should be searchable first.
 
 > _NOTE_: His students are in luck! The [Starter Showcase](/starters/?sort=stars) (see [PR 6113](https://github.com/gatsbyjs/gatsby/pull/6113)) and [Site Showcase](/showcase/) ([see relevant issues here](https://github.com/gatsbyjs/gatsby/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+site+showcase)) are nearly done.
 

@@ -3,7 +3,7 @@ title: Six Reasons I Chose Gatsby
 date: 2018-05-11
 author: Ray Gesualdo
 excerpt: "Spoiler alert: I'm a big fan of Gatsby."
-tags: ["react", "graphql", "plugins"]
+tags: ["react", "graphql", "plugins", "developer-experience"]
 canonicalLink: https://www.raygesualdo.com/posts/six-reasons-i-chose-gatsby/
 publishedAt: raygesualdo.com
 ---
@@ -16,13 +16,13 @@ I've been working with React for the better part of 3.5 years. I know it. I'm ef
 
 ## #2: An extensive, well-architected plugin system
 
-One of the first things about Gatsby that impressed me was its plugin system. Like many other OSS tools such as Webpack and Babel, much of the power of Gatsby is provided by plugins. And that's a good thing. Its plugin architecture allows for incredibly deep integrations into almost every aspect of Gatsby: build configuration, data extraction and transformation, the build process, the browser at runtime, etc. This system has allowed not only the core Gatsby team to create powerful plugins, but the community to create equally powerful plugins as well. I've even tried my hand at [writing one](https://github.com/raygesualdo/gatsby-plugin-settings) (quite successfully, I might add). If there's a task you're looking to accomplish with Gatsby, odds are there is already a plugin for it. And if not, there's [plenty of documentation](/docs/plugin-authoring/) to help you get started writing one.
+One of the first things about Gatsby that impressed me was its plugin system. Like many other OSS tools such as webpack and Babel, much of the power of Gatsby is provided by plugins. And that's a good thing. Its plugin architecture allows for incredibly deep integrations into almost every aspect of Gatsby: build configuration, data extraction and transformation, the build process, the browser at runtime, etc. This system has allowed not only the core Gatsby team to create powerful plugins, but the community to create equally powerful plugins as well. I've even tried my hand at [writing one](https://github.com/raygesualdo/gatsby-plugin-settings) (quite successfully, I might add). If there's a task you're looking to accomplish with Gatsby, odds are there is already a plugin for it. And if not, there's [plenty of documentation](/docs/plugins/) to help you get started writing one.
 
 ## #3: The data fetching layer
 
 With any website, one needs to have data/content injected into markup to generate HTML. With static site generators, this usually involves writing Markdown files adjacent to template files that get merged together in some way at build time. Gatsby takes a different approach by providing a data fetching abstraction layer between your data/content and your templates. This brings about a huge paradigm shift both in how data is accessed in the templates as well as from where data can be pulled (we'll look at the latter in reason #4).
 
-With Gatsby, the entirety of your site's data is accessed via a local [GraphQL](https://graphql.org/) API. If you've never worked with GraphQL before, that's okay; Gatsby's docs [walk you through the process](/docs/querying-with-graphql/). In your page templates, you can specify the data you require for that page as a GraphQL query. Then, when Gatsby's build process runs, it analyzes the query and provides the requested data to the template. Future versions of Gatsby will also let you do this at the component level as well. This allows you to build up your templates using the React's normal component paradigm.
+With Gatsby, the entirety of your site's data is accessed via a local [GraphQL](https://graphql.org/) API. If you've never worked with GraphQL before, that's okay; Gatsby's docs [walk you through the process](/docs/graphql-concepts/). In your page templates, you can specify the data you require for that page as a GraphQL query. Then, when Gatsby's build process runs, it analyzes the query and provides the requested data to the template. Future versions of Gatsby will also let you do this at the component level as well. This allows you to build up your templates using the React's normal component paradigm.
 
 ## #4: Multiple data sources
 
@@ -30,7 +30,7 @@ Because the manner in which one accesses data is abstracted from the data itself
 
 ## #5: Performance and PWA features out-of-the-box
 
-Performance on the web can be difficult. It's especially helpful to have a tool that enforces best practices and optimizes your site by default. Gatsby does just that. When the build process runs, Gatsby creates static HTML files for each of your pages which provides fast initial load times and makes SEO much simpler. Once your page is loaded by the browser though, Gatsby will boot up React and navigate around your site as if you were navigating via a single page app with near-instant transitions without page reloads. Gatsby will even prefetch adjacent/related page content in the background so there's zero delay when your user clicks a link. The client-side experience is buttery smooth with JavaScript enabled and you don't lose any content or navigation if the user has JavaScript dislabed. By adding a single plugin, Gatsby can provide offline support as well, transforming your site into a full-blown Progressive Web App.
+Performance on the web can be difficult. It's especially helpful to have a tool that enforces best practices and optimizes your site by default. Gatsby does just that. When the build process runs, Gatsby creates static HTML files for each of your pages which provides fast initial load times and makes SEO much simpler. Once your page is loaded by the browser though, Gatsby will boot up React and navigate around your site as if you were navigating via a single page app with near-instant transitions without page reloads. Gatsby will even prefetch adjacent/related page content in the background so there's zero delay when your user clicks a link. The client-side experience is buttery smooth with JavaScript enabled and you don't lose any content or navigation if the user has JavaScript disabled. By adding a single plugin, Gatsby can provide offline support as well, transforming your site into a full-blown Progressive Web App.
 
 ## #6: The developer experience
 

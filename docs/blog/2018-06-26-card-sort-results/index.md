@@ -11,7 +11,7 @@ Recently, 36 Gatsby users completed an open card sort to help make our docs here
 
 ### Raw & beautified data
 
-I ran this card sort through [OptimalSort](https://www.optimalworkshop.com/), a software that moderates the card sort and presents the data in usable forms. If you’re curious to see the full results, you can [view the data](https://www.optimalworkshop.com/optimalsort/x87kpp82/5x34psa3-0/shared-results/fa8b66knb66qyhwh5l8j38bd273vkkm7), including raw data as well as things like a similarity matrix and a [dendogram](https://support.optimalworkshop.com/hc/en-us/articles/201997650-Interpreting-the-OptimalSort-dendrograms).
+I ran this card sort through [OptimalSort](https://www.optimalworkshop.com/), a software that moderates the card sort and presents the data in usable forms. If you’re curious to see the full results, you can [view the data](https://www.optimalworkshop.com/optimalsort/x87kpp82/5x34psa3-0/shared-results/fa8b66knb66qyhwh5l8j38bd273vkkm7), including raw data as well as things like a similarity matrix and a [dendrogram](https://support.optimalworkshop.com/en/articles/2626862-interpret-the-optimalsort-dendrograms-for-open-and-hybrid-card-sorts).
 
 ## How did participants categorize the docs?
 
@@ -36,9 +36,9 @@ No one seems to know what to do with the doc titled “Building apps with Gatsby
 
 This could mean several things:
 
-1.  We don’t have very many docs about how Gatsby can be used to build dynamic apps
-2.  People don’t think of Gatsby as a tool they’d use to build apps with
-3.  The title of the doc is too broad or too vague
+1. We don’t have very many docs about how Gatsby can be used to build dynamic apps
+2. People don’t think of Gatsby as a tool they’d use to build apps with
+3. The title of the doc is too broad or too vague
 
 Without interviewing each participant I can’t be sure, but I’m inclined to think a combination of all three factors means people don’t know where to put that doc in the navigation. This might mean we need clarity in how we present what Gatsby _is_ in all our informational material and marketing and that we build more docs about Gatsby being more than a static site generator.
 
@@ -74,11 +74,11 @@ List of other lonely docs that didn’t find a solid home through the card sort:
 - There was little agreement on where the “Html.js” doc goes. There was a 47% association with Babel and a 47% association with using layouts to build reusable site sections.
 - “React components” highest association was a 47% association with “basic structure of a Gatsby site” and all its associated pages. This slightly low association score probably results from the fact that the .org site doesn’t teach that much React at all, and there aren’t many docs on React specifically.
 
-## Dendogram adventures
+## Dendrogram adventures
 
-These screenshots that show a portion of the dendogram show that the clearest category was "Contributing", clear because the category name and the contents of the category are consistent:
+These screenshots that show a portion of the dendrogram show that the clearest category was "Contributing", clear because the category name and the contents of the category are consistent:
 
-![Contributing dendogram](contributing-dendogram.png)
+![Contributing dendrogram](contributing-dendogram.png)
 
 Gatsby users are in agreement on what that category ought to be called and what docs it should contain :)
 

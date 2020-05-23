@@ -1,3 +1,11 @@
-const presetAbsPath = require(`path`).join(__dirname, `.babel-preset.js`)
-const babelPreset = require(presetAbsPath)()
-module.exports = require(`babel-jest`).createTransformer(babelPreset)
+const babelPreset = require(`babel-preset-gatsby-package`)()
+module.exports = require(`babel-jest`).createTransformer({
+  ...babelPreset,
+  overrides: [
+    ...(babelPreset.overrides || []),
+    {
+      test: [`**/*.ts`, `**/*.tsx`],
+      plugins: [[`@babel/plugin-transform-typescript`, { isTSX: true }]],
+    },
+  ],
+})

@@ -1,6 +1,6 @@
 ---
 title: Gatsby + Contentful + Netlify (and Algolia)
-date: "2017-12-06"
+date: 2017-12-06
 author: "Josh Weaver"
 image: "gatsby-contentful-netlify-algolia.jpg"
 excerpt: "Gatsby has been getting a lot of recognition and adoption lately, and for good reason. It’s so flexible and it works well with nearly everything."
@@ -11,7 +11,7 @@ tags:
     "algolia",
     "getting-started",
     "hosting",
-    "ci",
+    "deployment",
     "performance",
   ]
 ---
@@ -40,16 +40,16 @@ The following is a report on my high-level experience of using Gatsby with
 Contentful, Netlify and Algolia and the problems they solve — without getting
 down into code.
 
-# Static to the Rescue?
+## Static to the Rescue?
 
 I know it’s bad to make assumptions, but I’m going to assume that if you’re here
 and reading this, you at least know a little about the perks of static sites and
-the JAMstack. If not, check out [https://jamstack.org/](https://jamstack.org/)
+the JAMstack. If not, check out https://jamstack.org/
 for a quick breakdown on why web development is, for lack of a better phrase,
 “going back to the basics.”
 
 Having dealt with my share of CMS headaches with Joomla in the almost-forgotten
-past, and Wordpress in the more recent years, I’ve been on a quest to simplify
+past, and WordPress in the more recent years, I’ve been on a quest to simplify
 things. I don’t want to worry about having a plugin or theme get hacked or the
 constant nagging to install updates. I also would prefer to not deal with themes
 at all and just have flexible building blocks to shape my site’s appearance via
@@ -57,8 +57,6 @@ my own codebase. Static sites excel at these things.
 
 But while static sites give you lots of perks, they do create some extra hurdles
 over going the traditional route.
-
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/LfjSCQ5ivKH3q" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/jump-rabbit-mixed-LfjSCQ5ivKH3q">via GIPHY</a></p>
 
 While they’re generally fast out of the box, static sites don’t make their
 content easily editable. After all, a static site’s content is usually just that
@@ -73,41 +71,41 @@ Before I jump into the topic of content and “data”, I want to briefly say th
 building a static site template with React-based architecture and hot module
 reloading is just plain fun. Gatsby’s CLI gets you going so quickly. It really
 is a joy to use. Judging from all the
-[twitter comments](http://twitter.com/gatsbyjs) saying the same thing, I think
+[Twitter comments](https://twitter.com/gatsbyjs) saying the same thing, I think
 that’s a common consensus.
 
 Okay, now back to some static hurdles.
 
-# A Problem of Content
+## A Problem of Content
 
 Our site has a lot of content (~300 articles) that needs to be maintained by
 non-developers, my co-workers. This meant we needed an approachable interface
 for copy and content editing. I wanted to make it as convenient as logging into
-Wordpress and publishing from there, without the Wordpress. So the publishing
-experience couldn’t rely on creating a file and committing changes to a git
+WordPress and publishing from there, without the WordPress. So the publishing
+experience couldn’t rely on creating a file and committing changes to a Git
 repo.
 
 > Sidebar: There is
-> [Gatsby-Source-Wordpress](/packages/gatsby-source-wordpress/)
-> plugin that pulls in content via a Wordpress API. However, to me, this was not
+> [Gatsby-Source-WordPress](/packages/gatsby-source-wordpress/)
+> plugin that pulls in content via a WordPress API. However, to me, this was not
 > appealing because I was trying to avoid hosting a traditional CMS entirely.
 
-# Solution: Contentful + Gatsby
+## Solution: Contentful + Gatsby
 
-Contentful is a hosted headless CMS with a fantastic user experience. It’s
-similar to having a backend like Wordpress, but you are fully responsible for
-the front-end layer. The beauty of Contentful is threefold.
+Contentful is a hosted [headless CMS](/docs/headless-cms/) with a fantastic user experience. It’s
+similar to having a backend like WordPress, but you are fully responsible for
+the frontend layer. The beauty of Contentful is threefold.
 
 - Intuitive and attractive UI
 - Simple content modeling
 - [Free tier](https://www.contentful.com/pricing/)
 
-Dealing with the back-end of Contentful is refreshing and the content modeling
+Dealing with the backend of Contentful is refreshing and the content modeling
 really leads the pack when compared to other headless content management
 systems. It doesn’t feel like something that just gets the job done, it’s
 actually really nice to use. They also just pushed some
 [great new changes](https://www.contentful.com/blog/2017/11/28/work-smarter-with-our-new-search-features/)
-that made it even easier to search and filter our articles on the back-end.
+that made it even easier to search and filter our articles on the backend.
 
 Contentful also happens to offer a
 [generous free tier](https://www.contentful.com/pricing/) with useful features
@@ -161,7 +159,7 @@ get converted to HTML via a transformer plugin within Gatsby. The markdown
 editing in Contentful is quite practical with standard WYSIWYG-like editor
 features. I haven’t heard any complaints from my co-workers.
 
-# Searching for a Search Solution
+## Searching for a Search Solution
 
 Another “problem” with static sites is the lack of out-of-the-box site search.
 Most search implementations occur between the server and the database. As a doc
@@ -181,7 +179,7 @@ something that would operate client-side, but that had the search brains still
 residing in the cloud somewhere. Though an option, I didn’t have time to build
 my own solution.
 
-# Solution: Algolia + Gatsby
+## Solution: Algolia + Gatsby
 
 This solution was a bit of a trial and error process for me. I had seen many doc
 sites use Algolia online in my dev travels. I knew it offered a usable free tier
@@ -203,7 +201,7 @@ event API that took the built HTML from each article. The library did the magic
 of converting the HTML to JSON, then I iterated through the JSON. While keeping
 track of the last linked heading (h tag), I set the index record’s page link
 accordingly for each article section. The index was then uploaded to Algolia via
-their node.js client.
+their Node.js client.
 
 It wasn’t pretty, but it worked.
 
@@ -237,7 +235,7 @@ Reactjs.org repo had the answer right in their
 They use DocSearch instead of rolling their own indexing and search interface.
 Oh well.
 
-# Hosting & Deployment
+## Hosting & Deployment
 
 A great thing about static sites is that you can host them just about anywhere.
 You get a folder of pre-built files that you can throw up on any web server and
@@ -261,7 +259,7 @@ for free?
 Luckily I already knew the answers to these questions because I had already
 discovered Netlify for some other projects.
 
-# Solution: Netlify + Gatsby
+## Solution: Netlify + Gatsby
 
 Plugging any static site into the Netlify workflow is a no brainer, but after I
 found Gatsby, I knew there was no other option for me. These two pair so well
@@ -280,13 +278,13 @@ through this section without a bullet list of why Netlify is so fantastic.
 - [And a lot more....](https://www.netlify.com/features/)
 - Did I mention you get all this for FREE?
 
-<div style="width:100%;height:0;padding-bottom:55%;position:relative;"><iframe src="https://giphy.com/embed/vMnuZGHJfFSTe" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/vMnuZGHJfFSTe">via GIPHY</a></p>
+https://giphy.com/gifs/vMnuZGHJfFSTe
 
 And back to using it with Gatsby.
 
 After you link your Netlify site to a specific code repository, Netlify’s build
 bots take care of the rest. From that point on, when you push a change to your
-repo, the build bot says, “Hey look! a change! I need to run the `gatsby build`
+repo, the build bot says, “Hey look! a change! I need to run the `npm run build`
 command...”, then it follows the package.json (or yarn file) in the repo and
 downloads the necessary dependencies if they aren’t already cached, and then
 builds out the static site.
@@ -319,7 +317,7 @@ addition, and Netlify rebuilds the site and deploys it.
 
 It’s a match made in JAMstack heaven.
 
-# Is it Magic?
+## Is it Magic?
 
 Gatsby makes building the site fun and painless. It gets out of the way and lets
 you be creative with your craft — yet also adds some insane perks, like
@@ -330,4 +328,4 @@ buttons and leaves you with a “Is it really this easy?” kind of feeling.
 
 Now, hopefully, our customers will feel the same with our site.
 
-<div style="width:100%;height:0;padding-bottom:92%;position:relative;"><iframe src="https://giphy.com/embed/12NUbkX6p4xOO4" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div><p><a href="https://giphy.com/gifs/shia-labeouf-12NUbkX6p4xOO4">via GIPHY</a></p>
+https://giphy.com/gifs/shia-labeouf-12NUbkX6p4xOO4

@@ -1,98 +1,81 @@
-import React from "react"
+/** @jsx jsx */
+import { jsx } from "theme-ui"
 import { graphql } from "gatsby"
-import Img from "gatsby-image"
 
-import Layout from "../components/layout"
+import Avatar from "../components/avatar"
 import Container from "../components/container"
 import BlogPostPreviewItem from "../components/blog-post-preview-item"
-import typography, { rhythm, options } from "../utils/typography"
+import FooterLinks from "../components/shared/footer-links"
+import PageMetadata from "../components/page-metadata"
 
-class ContributorPageTemplate extends React.Component {
-  render() {
-    const contributor = this.props.data.authorYaml
-    const allMarkdownRemark = this.props.data.allMarkdownRemark
-    return (
-      <Layout location={this.props.location}>
-        <Container>
-          <div
-            css={{
-              textAlign: `center`,
-              padding: `${rhythm(1.5)} ${rhythm(options.blockMarginBottom)}`,
-            }}
-          >
-            <div>
-              <Img
-                fixed={contributor.avatar.childImageSharp.fixed}
-                css={{
-                  height: rhythm(2.3),
-                  width: rhythm(2.3),
-                  borderRadius: `100%`,
-                  display: `inline-block`,
-                  verticalAlign: `middle`,
-                }}
-              />
-              <h1
-                css={{
-                  marginTop: 0,
-                }}
-              >
-                {contributor.id}
-              </h1>
-              <p
-                css={{
-                  fontFamily: typography.options.headerFontFamily.join(`,`),
-                  maxWidth: rhythm(18),
-                  marginLeft: `auto`,
-                  marginRight: `auto`,
-                }}
-              >
-                {contributor.bio}
-              </p>
+function ContributorPageTemplate({ data }) {
+  const contributor = data.authorYaml
+  const posts = data.allMdx.nodes
+
+  return (
+    <main>
+      <PageMetadata
+        title={`${contributor.id} - Contributor`}
+        description={contributor.bio}
+        image={contributor.avatar?.childImageSharp.fixed}
+      />
+      <Container>
+        <div
+          sx={{
+            textAlign: `center`,
+            py: 7,
+            px: 6,
+          }}
+        >
+          <div>
+            <Avatar image={contributor.avatar.childImageSharp.fixed} />
+            <h1 sx={{ mt: 0, mb: 3 }}>{contributor.id}</h1>
+            <p
+              sx={{
+                fontFamily: `heading`,
+                fontSize: 3,
+                maxWidth: `28rem`,
+                mx: `auto`,
+              }}
+            >
+              {contributor.bio}
+            </p>
+            {contributor.twitter && (
               <a href={`https://twitter.com/${contributor.twitter}`}>
                 {` `}
                 {contributor.twitter}
               </a>
-            </div>
+            )}
           </div>
-          <div
-            css={{
-              padding: `${rhythm(1.5)} ${rhythm(options.blockMarginBottom)}`,
-            }}
-          >
-            {allMarkdownRemark.edges.map(({ node }) => {
-              if (node.frontmatter.author) {
-                if (node.frontmatter.author.id === contributor.id) {
-                  return (
-                    <BlogPostPreviewItem
-                      post={node}
-                      key={node.fields.slug}
-                      css={{ marginBottom: rhythm(2) }}
-                    />
-                  )
-                }
-              }
-              return null
-            })}
-          </div>
-        </Container>
-      </Layout>
-    )
-  }
+        </div>
+        <div sx={{ py: 7, px: 6 }}>
+          {posts.map(node => (
+            <BlogPostPreviewItem
+              post={node}
+              key={node.fields.slug}
+              sx={{ mb: 9 }}
+            />
+          ))}
+        </div>
+      </Container>
+      <FooterLinks />
+    </main>
+  )
 }
 
 export default ContributorPageTemplate
 
 export const pageQuery = graphql`
-  query($slug: String!) {
-    authorYaml(fields: { slug: { eq: $slug } }) {
+  query($authorId: String!) {
+    authorYaml(id: { eq: $authorId }) {
       id
       bio
       twitter
       avatar {
         childImageSharp {
           fixed(
-            width: 63
-            height: 63
+            width: 64
+            height: 64
             quality: 75
             traceSVG: { turdSize: 10, background: "#f6f2f8", color: "#e0d6eb" }
           ) {
@@ -104,17 +87,15 @@ export const pageQuery = graphql`
         slug
       }
     }
-    allMarkdownRemark(
-      sort: { order: DESC, fields: [frontmatter___date] }
+    allMdx(
+      sort: { order: DESC, fields: [frontmatter___date, fields___slug] }
       filter: {
-        fileAbsolutePath: { regex: "/blog/" }
-        frontmatter: { draft: { ne: true } }
+        frontmatter: { author: { id: { eq: $authorId } } }
+        fields: { section: { eq: "blog" }, released: { eq: true } }
       }
     ) {
-      edges {
-        node {
-          ...BlogPostPreview_item
-        }
+      nodes {
+        ...BlogPostPreview_item
       }
     }
   }

@@ -1,71 +1,54 @@
 import React, { Component } from "react"
 import { graphql } from "gatsby"
 
-import ShowcaseView from "../views/starter-showcase"
+import StarterLibraryView from "../views/starter-library"
 
-class ShowcasePage extends Component {
+class StarterLibraryWrapper extends Component {
   render() {
     const data = this.props.data
     const location = this.props.location
 
-    return <ShowcaseView data={data} location={location} />
+    return <StarterLibraryView data={data} location={location} />
   }
 }
 
-export default ShowcasePage
+export default StarterLibraryWrapper
 
 export const showcaseQuery = graphql`
   query SiteShowcaseQuery {
-    allFile(filter: { absolutePath: { regex: "/generatedScreenshots/" } }) {
-      edges {
-        node {
-          name
-          childImageSharp {
-            ...ShowcaseThumbnailFragment_item
+    allStartersYaml(filter: { fields: { hasScreenshot: { eq: true } } }) {
+      nodes {
+        id
+        fields {
+          starterShowcase {
+            slug
+            stub
+            description
+            stars
+            lastUpdated
+            owner
+            name
+            githubFullName
+            gatsbyMajorVersion
+            allDependencies
+            gatsbyDependencies
+            miscDependencies
           }
         }
-      }
-    }
-    allMarkdownRemark(
-      sort: { order: DESC, fields: [frontmatter___date] }
-      limit: 1000
-      filter: { fileAbsolutePath: { regex: "/startersData/", ne: null } }
-    ) {
-      edges {
-        node {
-          id
-          fileAbsolutePath
-          frontmatter {
-            demo
-            repo
-            tags
-            features
-          }
-          fields {
-            anchor
-            slug
-            title
-            package
-            starterShowcase {
-              stub
-              gatsbyDependencies
-              lastUpdated
-              description
-              githubFullName
-              owner {
-                avatar_url
+        url
+        repo
+        description
+        tags
+        features
+        internal {
+          type
+        }
+        childScreenshot {
+          screenshotFile {
+            childImageSharp {
+              fluid(maxWidth: 512) {
+                ...GatsbyImageSharpFluid_noBase64
               }
-              githubData {
-                repoMetadata {
-                  full_name
-                  pushed_at
-                  name
-                  owner {
-                    login
-                  }
-                }
-              }
-              stars
             }
           }
         }

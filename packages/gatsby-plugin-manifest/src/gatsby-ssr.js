@@ -1,35 +1,91 @@
-import React from "react"
-import { withPrefix } from "gatsby"
+import * as React from "react"
+import { withPrefix as fallbackWithPrefix, withAssetPrefix } from "gatsby"
+import { defaultIcons, addDigestToPath, favicons } from "./common.js"
+import getManifestForPathname from "./get-manifest-pathname"
 
-exports.onRenderBody = ({ setHeadComponents }, pluginOptions) => {
-  // If icons were generated, also add a favicon link.
-  if (pluginOptions.icon) {
-    let favicon = `/icons/icon-48x48.png`
+// TODO: remove for v3
+const withPrefix = withAssetPrefix || fallbackWithPrefix
 
-    // The icon path could be different in hybrid mode
-    // this takes the first one of the possible icons
-    if (pluginOptions.icons && pluginOptions.icons.length) {
-      favicon = pluginOptions.icons[0].src
-    }
-
-    setHeadComponents([
-      <link
-        key={`gatsby-plugin-manifest-icon-link`}
-        rel="shortcut icon"
-        href={withPrefix(favicon)}
-      />,
-    ])
+exports.onRenderBody = (
+  { setHeadComponents, pathname = `/` },
+  {
+    localize,
+    legacy,
+    cache_busting_mode: cacheBusting,
+    cacheDigest,
+    icon,
+    icons: pluginIcons,
+    include_favicon: insertFaviconLinkTag,
+    theme_color_in_head: insertMetaTag,
+    theme_color,
+    crossOrigin,
   }
-  setHeadComponents([
+) => {
+  // We use this to build a final array to pass as the argument to setHeadComponents at the end of onRenderBody.
+  const headComponents = []
+
+  const srcIconExists = !!icon
+  const icons = pluginIcons || defaultIcons
+  const manifestFileName = getManifestForPathname(pathname, localize)
+
+  // If icons were generated, also add a favicon link.
+  if (srcIconExists) {
+    if (insertFaviconLinkTag) {
+      favicons.forEach(favicon => {
+        headComponents.push(
+          <link
+            key={`gatsby-plugin-manifest-icon-link`}
+            rel="icon"
+            href={withPrefix(
+              addDigestToPath(favicon.src, cacheDigest, cacheBusting)
+            )}
+          />
+        )
+      })
+    }
+  }
+
+  // Add manifest link tag.
+  headComponents.push(
     <link
       key={`gatsby-plugin-manifest-link`}
       rel="manifest"
-      href={withPrefix(`/manifest.webmanifest`)}
-    />,
-    <meta
-      key={`gatsby-plugin-manifest-meta`}
-      name="theme-color"
-      content={pluginOptions.theme_color}
-    />,
-  ])
+      href={withPrefix(`/${manifestFileName}`)}
+      crossOrigin={crossOrigin}
+    />
+  )
+
+  // The user has an option to opt out of the theme_color meta tag being inserted into the head.
+  if (theme_color && insertMetaTag) {
+    headComponents.push(
+      <meta
+        key={`gatsby-plugin-manifest-meta`}
+        name="theme-color"
+        content={theme_color}
+      />
+    )
+  }
+
+  if (legacy) {
+    icons.forEach(icon => {
+      headComponents.push(
+        <link
+          key={`gatsby-plugin-manifest-apple-touch-icon-${icon.sizes}`}
+          rel="apple-touch-icon"
+          sizes={icon.sizes}
+          href={withPrefix(
+            addDigestToPath(
+              icon.src,
+              cacheDigest,
+              srcIconExists ? cacheBusting : `none`
+            )
+          )}
+        />
+      )
+    })
+  }
+
+  setHeadComponents(headComponents)
+
+  return true
 }

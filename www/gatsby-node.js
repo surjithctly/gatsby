@@ -1,429 +1,51 @@
-const _ = require(`lodash`)
 const Promise = require(`bluebird`)
-const path = require(`path`)
-const parseFilepath = require(`parse-filepath`)
+const fetch = require(`node-fetch`)
 const fs = require(`fs-extra`)
-const slash = require(`slash`)
-const slugify = require(`slugify`)
-const url = require(`url`)
+const child_process = require(`child_process`)
+const startersRedirects = require(`./starter-redirects.json`)
+const yaml = require(`js-yaml`)
+const redirects = yaml.load(fs.readFileSync(`./redirects.yaml`))
+const { i18nEnabled } = require(`./src/utils/i18n`)
 
-const localPackages = `../packages`
-const localPackagesArr = []
-fs.readdirSync(localPackages).forEach(file => {
-  localPackagesArr.push(file)
-})
-// convert a string like `/some/long/path/name-of-docs/` to `name-of-docs`
-const slugToAnchor = slug =>
-  slug
-    .split(`/`) // split on dir separators
-    .filter(item => item !== ``) // remove empty values
-    .pop() // take last item
+const docs = require(`./src/utils/node/docs.js`)
+const blog = require(`./src/utils/node/blog.js`)
+const showcase = require(`./src/utils/node/showcase.js`)
+const starters = require(`./src/utils/node/starters.js`)
+const creators = require(`./src/utils/node/creators.js`)
+const packages = require(`./src/utils/node/packages.js`)
+const features = require(`./src/utils/node/features.js`)
+const sections = [docs, blog, showcase, starters, creators, packages, features]
 
-exports.createPages = ({ graphql, actions }) => {
-  const { createPage, createRedirect } = actions
+exports.createPages = async helpers => {
+  const { actions } = helpers
+  const { createRedirect } = actions
 
-  // Random redirects
-  createRedirect({
-    fromPath: `/blog/2018-02-26-documentation-project/`, // Tweeted this link out then switched it
-    toPath: `/blog/2018-02-28-documentation-project/`,
-    isPermanent: true,
+  redirects.forEach(redirect => {
+    createRedirect({ isPermanent: true, ...redirect, force: true })
   })
 
-  createRedirect({
-    fromPath: `/community/`, // Moved "Community" page from /community to /docs/community
-    toPath: `/docs/community/`,
-    isPermanent: true,
-  })
-
-  createRedirect({
-    fromPath: `/packages/`, // Moved "Plugins" page from /packages to /plugins
-    toPath: `/plugins/`,
-    isPermanent: true,
-  })
-
-  createRedirect({
-    fromPath: `/docs/netlify-cms`,
-    isPermanent: true,
-    redirectInBrowser: true,
-    toPath: `/docs/sourcing-from-netlify-cms`,
-  })
-
-  createRedirect({
-    fromPath: `/starter-showcase/`, // Moved "Starter Showcase" index page from /starter-showcase to /starters
-    toPath: `/starters/`,
-    isPermanent: true,
-  })
-
-  return new Promise((resolve, reject) => {
-    const docsTemplate = path.resolve(`src/templates/template-docs-markdown.js`)
-    const blogPostTemplate = path.resolve(`src/templates/template-blog-post.js`)
-    const blogListTemplate = path.resolve(`src/templates/template-blog-list.js`)
-    const tagTemplate = path.resolve(`src/templates/tags.js`)
-    const contributorPageTemplate = path.resolve(
-      `src/templates/template-contributor-page.js`
-    )
-    const localPackageTemplate = path.resolve(
-      `src/templates/template-docs-local-packages.js`
-    )
-    const remotePackageTemplate = path.resolve(
-      `src/templates/template-docs-remote-packages.js`
-    )
-    const showcaseTemplate = path.resolve(
-      `src/templates/template-showcase-details.js`
-    )
-    const creatorPageTemplate = path.resolve(
-      `src/templates/template-creator-details.js`
-    )
-
+  Object.entries(startersRedirects).forEach(([fromSlug, toSlug]) => {
     createRedirect({
-      fromPath: `/docs/bound-action-creators/`,
+      fromPath: `/starters${fromSlug}`,
+      toPath: `/starters${toSlug}`,
       isPermanent: true,
-      redirectInBrowser: true,
-      toPath: `/docs/actions/`,
-    })
-
-    createRedirect({
-      fromPath: `/docs/bound-action-creators`,
-      isPermanent: true,
-      redirectInBrowser: true,
-      toPath: `/docs/actions`,
-    })
-
-    // Query for markdown nodes to use in creating pages.
-
-    graphql(
-      `
-        query {
-          allMarkdownRemark(
-            sort: { order: DESC, fields: [frontmatter___date] }
-            limit: 10000
-            filter: { fileAbsolutePath: { ne: null } }
-          ) {
-            edges {
-              node {
-                fields {
-                  slug
-                  package
-                  starterShowcase {
-                    slug
-                    stub
-                  }
-                }
-                frontmatter {
-                  title
-                  draft
-                  canonicalLink
-                  publishedAt
-                  tags
-                }
-              }
-            }
-          }
-          allAuthorYaml {
-            edges {
-              node {
-                fields {
-                  slug
-                }
-              }
-            }
-          }
-          allCreatorsYaml {
-            edges {
-              node {
-                fields {
-                  slug
-                }
-              }
-            }
-          }
-          allSitesYaml(filter: { main_url: { ne: null } }) {
-            edges {
-              node {
-                fields {
-                  slug
-                }
-              }
-            }
-          }
-          allNpmPackage {
-            edges {
-              node {
-                id
-                title
-                slug
-                readme {
-                  id
-                  childMarkdownRemark {
-                    id
-                    html
-                  }
-                }
-              }
-            }
-          }
-        }
-      `
-    ).then(result => {
-      if (result.errors) {
-        return reject(result.errors)
-      }
-
-      const blogPosts = _.filter(result.data.allMarkdownRemark.edges, edge => {
-        const slug = _.get(edge, `node.fields.slug`)
-        const draft = _.get(edge, `node.frontmatter.draft`)
-        if (!slug) return undefined
-
-        if (_.includes(slug, `/blog/`) && !draft) {
-          return edge
-        }
-
-        return undefined
-      })
-
-      // Create blog-list pages.
-      const postsPerPage = 8
-      const numPages = Math.ceil(blogPosts.length / postsPerPage)
-
-      Array.from({ length: numPages }).forEach((_, i) => {
-        createPage({
-          path: i === 0 ? `/blog` : `/blog/page/${i + 1}`,
-          component: slash(blogListTemplate),
-          context: {
-            limit: postsPerPage,
-            skip: i * postsPerPage,
-            numPages,
-            currentPage: i + 1,
-          },
-        })
-      })
-
-      // Create blog-post pages.
-      blogPosts.forEach((edge, index) => {
-        const next = index === 0 ? null : blogPosts[index - 1].node
-        const prev =
-          index === blogPosts.length - 1 ? null : blogPosts[index + 1].node
-
-        createPage({
-          path: `${edge.node.fields.slug}`, // required
-          component: slash(blogPostTemplate),
-          context: {
-            slug: edge.node.fields.slug,
-            prev,
-            next,
-          },
-        })
-      })
-
-      const tagLists = blogPosts
-        .filter(post => _.get(post, `node.frontmatter.tags`))
-        .map(post => _.get(post, `node.frontmatter.tags`))
-
-      _.uniq(_.flatten(tagLists)).forEach(tag => {
-        createPage({
-          path: `/blog/tags/${_.kebabCase(tag.toLowerCase())}/`,
-          component: tagTemplate,
-          context: {
-            tag,
-          },
-        })
-      })
-
-      // Create starters.
-      const starters = _.filter(result.data.allMarkdownRemark.edges, edge => {
-        const slug = _.get(edge, `node.fields.starterShowcase.slug`)
-        if (!slug) return null
-        else return edge
-      })
-      const starterTemplate = path.resolve(
-        `src/templates/template-starter-showcase.js`
-      )
-
-      starters.forEach((edge, index) => {
-        createPage({
-          path: `/starters${edge.node.fields.starterShowcase.slug}`, // required
-          component: slash(starterTemplate),
-          context: {
-            slug: edge.node.fields.starterShowcase.slug,
-            stub: edge.node.fields.starterShowcase.stub,
-          },
-        })
-      })
-      // END Create starters.
-
-      // Create contributor pages.
-      result.data.allAuthorYaml.edges.forEach(edge => {
-        createPage({
-          path: `${edge.node.fields.slug}`,
-          component: slash(contributorPageTemplate),
-          context: {
-            slug: edge.node.fields.slug,
-          },
-        })
-      })
-
-      result.data.allCreatorsYaml.edges.forEach(edge => {
-        if (!edge.node.fields) return
-        if (!edge.node.fields.slug) return
-        createPage({
-          path: `${edge.node.fields.slug}`,
-          component: slash(creatorPageTemplate),
-          context: {
-            slug: edge.node.fields.slug,
-          },
-        })
-      })
-
-      result.data.allSitesYaml.edges.forEach(edge => {
-        if (!edge.node.fields) return
-        if (!edge.node.fields.slug) return
-        createPage({
-          path: `${edge.node.fields.slug}`,
-          component: slash(showcaseTemplate),
-          context: {
-            slug: edge.node.fields.slug,
-          },
-        })
-      })
-
-      // Create docs pages.
-      result.data.allMarkdownRemark.edges.forEach(edge => {
-        const slug = _.get(edge, `node.fields.slug`)
-        if (!slug) return
-
-        if (!_.includes(slug, `/blog/`)) {
-          createPage({
-            path: `${edge.node.fields.slug}`, // required
-            component: slash(
-              edge.node.fields.package ? localPackageTemplate : docsTemplate
-            ),
-            context: {
-              slug: edge.node.fields.slug,
-            },
-          })
-        }
-      })
-
-      const allPackages = result.data.allNpmPackage.edges
-      // Create package readme
-      allPackages.forEach(edge => {
-        if (_.includes(localPackagesArr, edge.node.title)) {
-          createPage({
-            path: edge.node.slug,
-            component: slash(localPackageTemplate),
-            context: {
-              slug: edge.node.slug,
-              id: edge.node.id,
-            },
-          })
-        } else {
-          createPage({
-            path: edge.node.slug,
-            component: slash(remotePackageTemplate),
-            context: {
-              slug: edge.node.slug,
-              id: edge.node.id,
-            },
-          })
-        }
-      })
-
-      return resolve()
+      force: true,
     })
   })
+
+  await Promise.all(sections.map(section => section.createPages(helpers)))
 }
 
-// Create slugs for files.
-exports.onCreateNode = ({ node, actions, getNode, getNodes }) => {
-  const { createNodeField } = actions
-  let slug
-  if (node.internal.type === `File`) {
-    const parsedFilePath = parseFilepath(node.relativePath)
-    if (node.sourceInstanceName === `docs`) {
-      if (parsedFilePath.name !== `index` && parsedFilePath.dir !== ``) {
-        slug = `/${parsedFilePath.dir}/${parsedFilePath.name}/`
-      } else if (parsedFilePath.dir === ``) {
-        slug = `/${parsedFilePath.name}/`
-      } else {
-        slug = `/${parsedFilePath.dir}/`
-      }
-    }
-    if (slug) {
-      createNodeField({ node, name: `slug`, value: slug })
-    }
-  } else if (
-    node.internal.type === `MarkdownRemark` &&
-    getNode(node.parent).internal.type === `File`
-  ) {
-    const fileNode = getNode(node.parent)
-    const parsedFilePath = parseFilepath(fileNode.relativePath)
-    // Add slugs for docs pages
-    if (fileNode.sourceInstanceName === `docs`) {
-      if (parsedFilePath.name !== `index` && parsedFilePath.dir !== ``) {
-        slug = `/${parsedFilePath.dir}/${parsedFilePath.name}/`
-      } else if (parsedFilePath.dir === ``) {
-        slug = `/${parsedFilePath.name}/`
-      } else {
-        slug = `/${parsedFilePath.dir}/`
-      }
-    }
-    // Add slugs for package READMEs.
-    if (
-      fileNode.sourceInstanceName === `packages` &&
-      parsedFilePath.name === `README`
-    ) {
-      slug = `/packages/${parsedFilePath.dir}/`
-      createNodeField({
-        node,
-        name: `title`,
-        value: parsedFilePath.dir,
-      })
-      createNodeField({ node, name: `package`, value: true })
-    }
-    if (
-      // starter showcase
-      fileNode.sourceInstanceName === `StarterShowcaseData` &&
-      parsedFilePath.name !== `README`
-    ) {
-      createNodesForStarterShowcase({ node, getNode, getNodes, actions })
-    } // end starter showcase
-    if (slug) {
-      createNodeField({ node, name: `anchor`, value: slugToAnchor(slug) })
-      createNodeField({ node, name: `slug`, value: slug })
-    }
-  } else if (node.internal.type === `AuthorYaml`) {
-    slug = `/contributors/${slugify(node.id, {
-      lower: true,
-    })}/`
-    createNodeField({ node, name: `slug`, value: slug })
-  } else if (node.internal.type === `SitesYaml` && node.main_url) {
-    const parsed = url.parse(node.main_url)
-    const cleaned = parsed.hostname + parsed.pathname
-    slug = `/showcase/${slugify(cleaned)}`
-    createNodeField({ node, name: `slug`, value: slug })
-  }
+// Create slugs for files, set released status for blog posts.
+exports.onCreateNode = helpers => {
+  sections.forEach(section => section.onCreateNode(helpers))
+}
 
-  // Community/Creators Pages
-  else if (node.internal.type === `CreatorsYaml`) {
-    const validTypes = {
-      individual: `people`,
-      agency: `agencies`,
-      company: `companies`,
-    }
-
-    if (!validTypes[node.type]) {
-      throw new Error(
-        `Creators must have a type of “individual”, “agency”, or “company”, but invalid type “${
-          node.type
-        }” was provided for ${node.name}.`
-      )
-    }
-    slug = `/community/${validTypes[node.type]}/${slugify(node.name, {
-      lower: true,
-    })}`
-    createNodeField({ node, name: `slug`, value: slug })
+exports.onPostBootstrap = () => {
+  // Compile language strings if locales are enabled
+  if (i18nEnabled) {
+    child_process.execSync(`yarn lingui:build`)
   }
-  // end Community/Creators Pages
 }
 
 exports.onPostBuild = () => {
@@ -433,63 +55,122 @@ exports.onPostBuild = () => {
   )
 }
 
-// Starter Showcase related code
-const { createFilePath } = require(`gatsby-source-filesystem`)
-const gitFolder = `./src/data/StarterShowcase/generatedGithubData`
-function createNodesForStarterShowcase({ node, getNode, getNodes, actions }) {
-  const { createNodeField, createParentChildLink } = actions
-  if (node.internal.type === `MarkdownRemark`) {
-    const slug = createFilePath({
-      node,
-      getNode,
-      basePath: `startersData`,
-    })
-    // preprocessing
-    const stub = slug.replace(/\//gi, ``)
-    var fromPath = path.join(gitFolder, `${stub}.json`)
-    var data = fs.readFileSync(fromPath, `utf8`)
-    const ghdata = JSON.parse(data)
-    if (ghdata.repository && ghdata.repository.url)
-      ghdata.repository = ghdata.repository.url // flatten a potential object into a string. weird quirk.
-    const { repoMetadata, dependencies = [], devDependencies = [] } = ghdata
-    const allDependencies = Object.entries(dependencies).concat(
-      Object.entries(devDependencies)
-    )
-    // make an object to stick into a Field
-    const starterShowcaseFields = {
-      slug,
-      stub,
-      date: new Date(node.frontmatter.date),
-      githubData: ghdata,
-      // nice-to-have destructures of githubData
-      description: ghdata.description,
-      stars: repoMetadata.stargazers_count,
-      lastUpdated: repoMetadata.created_at,
-      owner: repoMetadata.owner,
-      githubFullName: repoMetadata.full_name,
-      allDependencies,
-      gatsbyDependencies: allDependencies
-        .filter(
-          ([key, _]) => ![`gatsby-cli`, `gatsby-link`].includes(key) // remove stuff everyone has
-        )
-        .filter(([key, _]) => key.includes(`gatsby`)),
-      miscDependencies: allDependencies.filter(
-        ([key, _]) => !key.includes(`gatsby`)
-      ),
+// XXX this should probably be a plugin or something.
+exports.sourceNodes = async ({
+  actions: { createTypes, createNode },
+  createContentDigest,
+}) => {
+  /*
+   * NOTE: This _only_ defines the schema we currently query for. If anything in
+   * the query at `src/pages/contributing/events.js` changes, we need to make
+   * sure these types are updated as well.
+   *
+   * But why?! Why would I do something this fragile?
+   *
+   * Gather round, children, and I’ll tell you the tale of @jlengstorf being too
+   * lazy to make upstream fixes...
+   */
+  const typeDefs = `
+    type Airtable implements Node {
+      id: ID!
+      data: AirtableData
     }
-    createNodeField({
-      node,
-      name: `starterShowcase`,
-      value: starterShowcaseFields,
-    })
-  }
-}
-// End Starter Showcase related code
 
-// limited logging for debug purposes
-let limitlogcount = 0
-function log(max) {
-  return function(...args) {
-    if (limitlogcount++ < max) console.log(...args)
-  }
+    type SitesYaml implements Node {
+      title: String!
+      main_url: String!
+      url: String!
+      source_url: String
+      featured: Boolean
+      categories: [String]!
+      built_by: String
+      built_by_url: String
+      description: String
+      screenshotFile: Screenshot # added by gatsby-transformer-screenshot
+    }
+
+    type StartersYaml implements Node {
+      url: String!
+      repo: String!
+      description: String
+      tags: [String!]
+      features: [String!]
+      screenshotFile: Screenshot # added by gatsby-transformer-screenshot
+    }
+
+    type AirtableData @dontInfer {
+      name: String @proxy(from: "Name_of_Event")
+      organizerFirstName: String @proxy(from: "Organizer_Name")
+      organizerLastName: String @proxy(from: "Organizer's_Last_Name")
+      date: Date @dateformat @proxy(from: "Date_of_Event")
+      location: String @proxy(from: "Location_of_Event")
+      url: String @proxy(from: "Event_URL_(if_applicable)")
+      type: String @proxy(from: "What_type_of_event_is_this?")
+      hasGatsbyTeamSpeaker: Boolean @proxy(from: "Gatsby_Speaker_Approved")
+      approved: Boolean @proxy(from: "Approved_for_posting_on_event_page")
+    }
+  `
+
+  createTypes(typeDefs)
+
+  // get data from GitHub API at build time
+  const result = await fetch(`https://api.github.com/repos/gatsbyjs/gatsby`)
+  const resultData = await result.json()
+  // create node for build time data example in the docs
+  createNode({
+    nameWithOwner: resultData.full_name,
+    url: resultData.html_url,
+    // required fields
+    id: `example-build-time-data`,
+    parent: null,
+    children: [],
+    internal: {
+      type: `Example`,
+      contentDigest: createContentDigest(resultData),
+    },
+  })
+}
+
+exports.onCreateWebpackConfig = ({ actions, plugins }) => {
+  const currentCommitSHA = require(`child_process`)
+    .execSync(`git rev-parse HEAD`, {
+      encoding: `utf-8`,
+    })
+    .trim()
+
+  actions.setWebpackConfig({
+    plugins: [
+      plugins.define({
+        "process.env.COMMIT_SHA": JSON.stringify(currentCommitSHA),
+      }),
+    ],
+  })
+}
+
+// Patch `DocumentationJs` type to handle custom `@availableIn` jsdoc tag
+exports.createResolvers = ({ createResolvers }) => {
+  createResolvers({
+    DocumentationJs: {
+      availableIn: {
+        type: `[String]`,
+        resolve(source) {
+          const { tags } = source
+          if (!tags || !tags.length) {
+            return []
+          }
+
+          const availableIn = tags.find(tag => tag.title === `availableIn`)
+          if (availableIn) {
+            return availableIn.description
+              .split(`\n`)[0]
+              .replace(/[[\]]/g, ``)
+              .split(`,`)
+              .map(api => api.trim())
+          }
+
+          return []
+        },
+      },
+    },
+  })
 }

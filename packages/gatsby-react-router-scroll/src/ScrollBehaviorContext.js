@@ -2,17 +2,14 @@ import React from "react"
 import ScrollBehavior from "scroll-behavior"
 import PropTypes from "prop-types"
 import { globalHistory as history } from "@reach/router/lib/history"
-
 import SessionStorage from "./StateStorage"
+
+export const ScrollBehaviorContext = React.createContext()
 
 const propTypes = {
   shouldUpdateScroll: PropTypes.func,
   children: PropTypes.element.isRequired,
   location: PropTypes.object.isRequired,
-}
-
-const childContextTypes = {
-  scrollBehavior: PropTypes.object.isRequired,
 }
 
 class ScrollContext extends React.Component {
@@ -25,14 +22,6 @@ class ScrollContext extends React.Component {
       getCurrentLocation: () => this.props.location,
       shouldUpdateScroll: this.shouldUpdateScroll,
     })
-
-    this.scrollBehavior.updateScroll(null, this.getRouterProps())
-  }
-
-  getChildContext() {
-    return {
-      scrollBehavior: this,
-    }
   }
 
   componentDidUpdate(prevProps) {
@@ -45,16 +34,6 @@ class ScrollContext extends React.Component {
 
     const prevRouterProps = {
       location: prevProps.location,
-    }
-
-    // The "scroll-behavior" package expects the "action" to be on the location
-    // object so let's copy it over.
-
-    // Temp hack while awaiting https://github.com/reach/router/issues/119
-    if (window.__navigatingToLink) {
-      location.action = `PUSH`
-    } else {
-      location.action = `POP`
     }
 
     this.scrollBehavior.updateScroll(prevRouterProps, { history, location })
@@ -97,11 +76,14 @@ class ScrollContext extends React.Component {
   }
 
   render() {
-    return React.Children.only(this.props.children)
+    return (
+      <ScrollBehaviorContext.Provider value={this}>
+        {React.Children.only(this.props.children)}
+      </ScrollBehaviorContext.Provider>
+    )
   }
 }
 
 ScrollContext.propTypes = propTypes
-ScrollContext.childContextTypes = childContextTypes
 
 export default ScrollContext

@@ -1,73 +1,28 @@
-import React, { Fragment } from "react"
+import React from "react"
 
 import Accordion from "./accordion"
-import createLink from "../../utils/sidebar/create-link"
+import ItemLink from "./item-link"
+import { useSidebarContext } from "./sidebar"
 
-const isItemActive = (activeItemParents, item) => {
-  if (activeItemParents) {
-    for (let parent of activeItemParents) {
-      if (parent === item.title) return true
+const Item = ({ item, isSteps }) => {
+  const { getItemState } = useSidebarContext()
+  const { isActive } = getItemState(item)
+  const itemRef = React.useRef(null)
+
+  React.useEffect(() => {
+    // If the active item isn't a hash, scroll to it on page load
+    if (isActive && !item.link.includes(`#`)) {
+      itemRef.current.scrollIntoView({ block: `center` })
     }
-  }
+  }, [isActive, item])
 
-  return false
-}
-
-class Item extends React.PureComponent {
-  render() {
-    const {
-      activeItemLink,
-      activeItemParents,
-      isActive,
-      openSectionHash,
-      item,
-      level,
-      location,
-      onLinkClick,
-      onSectionTitleClick,
-      ui,
-    } = this.props
-
-    const isParentOfActiveItem = isItemActive(activeItemParents, item)
-
+  if (item.items) {
+    return <Accordion itemRef={itemRef} item={item} />
+  } else {
     return (
-      <Fragment>
-        {item.items ? (
-          <Accordion
-            activeItemLink={activeItemLink}
-            activeItemParents={activeItemParents}
-            createLink={createLink}
-            isActive={
-              isActive ||
-              item.link === location.pathname ||
-              isParentOfActiveItem ||
-              item.disableAccordions
-            }
-            isParentOfActiveItem={isParentOfActiveItem}
-            item={item}
-            level={level}
-            location={location}
-            onLinkClick={onLinkClick}
-            openSectionHash={openSectionHash}
-            onSectionTitleClick={onSectionTitleClick}
-          />
-        ) : (
-          <li
-            css={{
-              ...this.props.styles,
-              paddingLeft: level === 0 ? 40 : false,
-            }}
-          >
-            {createLink({
-              isActive: item.link === activeItemLink.link,
-              item,
-              location,
-              onLinkClick,
-              stepsUI: ui === `steps`,
-            })}
-          </li>
-        )}
-      </Fragment>
+      <li ref={itemRef}>
+        <ItemLink item={item} isSteps={isSteps} />
+      </li>
     )
   }
 }

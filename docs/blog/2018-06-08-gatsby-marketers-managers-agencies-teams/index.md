@@ -1,7 +1,8 @@
 ---
 title: Gatsby for Marketers, Managers, Agencies and Teams
-date: "2018-06-08"
+date: 2018-06-08
 author: "Linda Watkins"
+tags: ["marketing"]
 ---
 
 A few years ago, I worked at a small startup on an agile marketing team. This startup built website management tools and they had many customers come to them with stories of hosting headaches. I saw first-hand the hosting hassles that companies face.
@@ -10,7 +11,7 @@ One of the biggest challenges was having your best day become your worst nightma
 
 In contrast, I’ve become a fan of Gatsby-- a blazing-fast website development tool that eliminates the hosting hassles of managing complex, costly infrastructure. Gatsby is a new paradigm for building websites and there are some key benefits that are explained in this new one-page overview.
 
-# Living on the edge
+## Living on the edge
 
 Gatsby sites scale quickly and easily because they live on the edge. There are no servers! With a Gatsby website, content is compiled ahead of time and stored directly on the CDN (content delivery network). Basically, this means that your website lives closest to your customers—wherever they are—which means it’s immediately available, instantly scalable, and loads with lightning-fast speed. And it’s inherently secure because hackers can’t access your database or CMS. Honestly, it’s like magic. I guess I’ve gotten used to pages that take a second or two to load (which is annoying but happens so often) but when I go to a Gatsby site, it’s almost instantaneous. It’s so much faster than anything I’ve seen before.
 

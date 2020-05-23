@@ -1,4 +1,3 @@
-const crypto = require(`crypto`)
 const moment = require(`moment`)
 const chokidar = require(`chokidar`)
 const systemPath = require(`path`)
@@ -6,7 +5,7 @@ const _ = require(`lodash`)
 
 const { emitter } = require(`../../redux`)
 const { boundActionCreators } = require(`../../redux/actions`)
-const { getNode } = require(`../../redux`)
+const { getNode } = require(`../../db/nodes`)
 
 function transformPackageJson(json) {
   const transformDeps = deps =>
@@ -42,7 +41,7 @@ function transformPackageJson(json) {
 
 const createPageId = path => `SitePage ${path}`
 
-exports.sourceNodes = ({ actions, store }) => {
+exports.sourceNodes = ({ createContentDigest, actions, store }) => {
   const { createNode } = actions
   const state = store.getState()
   const { program } = state
@@ -54,14 +53,11 @@ exports.sourceNodes = ({ actions, store }) => {
   createNode({
     ...page,
     id: createPageId(page.path),
-    parent: `SOURCE`,
+    parent: null,
     children: [],
     internal: {
       type: `SitePage`,
-      contentDigest: crypto
-        .createHash(`md5`)
-        .update(JSON.stringify(page))
-        .digest(`hex`),
+      contentDigest: createContentDigest(page),
     },
   })
 
@@ -72,22 +68,16 @@ exports.sourceNodes = ({ actions, store }) => {
       packageJson: transformPackageJson(
         require(`${plugin.resolve}/package.json`)
       ),
-      parent: `SOURCE`,
+      parent: null,
       children: [],
       internal: {
-        contentDigest: crypto
-          .createHash(`md5`)
-          .update(JSON.stringify(plugin))
-          .digest(`hex`),
+        contentDigest: createContentDigest(plugin),
         type: `SitePlugin`,
       },
     })
   })
 
   // Add site node.
-  const buildTime = moment()
-    .subtract(process.uptime(), `seconds`)
-    .toJSON()
 
   const createGatsbyConfigNode = (config = {}) => {
     // Delete plugins from the config as we add plugins above.
@@ -97,27 +87,41 @@ exports.sourceNodes = ({ actions, store }) => {
       siteMetadata: {
         ...configCopy.siteMetadata,
       },
-      port: state.program.port,
+      port: state.program.proxyPort,
       host: state.program.host,
       ...configCopy,
-      buildTime,
     }
     createNode({
       ...node,
       id: `Site`,
-      parent: `SOURCE`,
+      parent: null,
       children: [],
       internal: {
-        contentDigest: crypto
-          .createHash(`md5`)
-          .update(JSON.stringify(node))
-          .digest(`hex`),
+        contentDigest: createContentDigest(node),
         type: `Site`,
       },
     })
   }
 
   createGatsbyConfigNode(state.config)
+
+  const buildTime = moment()
+    .subtract(process.uptime(), `seconds`)
+    .startOf(`second`)
+    .toJSON()
+
+  const metadataNode = { buildTime }
+
+  createNode({
+    ...metadataNode,
+    id: `SiteBuildMetadata`,
+    parent: null,
+    children: [],
+    internal: {
+      contentDigest: createContentDigest(metadataNode),
+      type: `SiteBuildMetadata`,
+    },
+  })
 
   const pathToGatsbyConfig = systemPath.join(
     program.directory,
@@ -139,7 +143,43 @@ exports.sourceNodes = ({ actions, store }) => {
   })
 }
 
-exports.onCreatePage = ({ page, actions }) => {
+exports.createSchemaCustomization = ({ actions }) => {
+  const { createTypes } = actions
+  const typeDefs = `
+    type Site implements Node {
+      buildTime: Date @dateformat
+    }
+  `
+  createTypes(typeDefs)
+}
+
+exports.createResolvers = ({ createResolvers }) => {
+  const resolvers = {
+    Site: {
+      buildTime: {
+        type: `Date`,
+        resolve(source, args, context, info) {
+          const { buildTime } = context.nodeModel.getNodeById({
+            id: `SiteBuildMetadata`,
+            type: `SiteBuildMetadata`,
+          })
+          return info.originalResolver(
+            {
+              ...source,
+              buildTime,
+            },
+            args,
+            context,
+            info
+          )
+        },
+      },
+    },
+  }
+  createResolvers(resolvers)
+}
+
+exports.onCreatePage = ({ createContentDigest, page, actions }) => {
   const { createNode } = actions
   // eslint-disable-next-line
   const { updatedAt, ...pageWithoutUpdated } = page
@@ -148,14 +188,11 @@ exports.onCreatePage = ({ page, actions }) => {
   createNode({
     ...pageWithoutUpdated,
     id: createPageId(page.path),
-    parent: `SOURCE`,
+    parent: null,
     children: [],
     internal: {
       type: `SitePage`,
-      contentDigest: crypto
-        .createHash(`md5`)
-        .update(JSON.stringify(pageWithoutUpdated))
-        .digest(`hex`),
+      contentDigest: createContentDigest(pageWithoutUpdated),
       description:
         page.pluginCreatorId === `Plugin default-site-plugin`
           ? `Your site's "gatsby-node.js"`
